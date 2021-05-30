@@ -1,0 +1,10 @@
+<div>
+  <%= escape(@result["title"]) %>
+  <%= escape(@result["body"]) %>
+</div>
+<input type="submit" onclick="location.href='/memos/<%=@result["id"]%>/edit'" value="変更">
+<form action="/memos/<%=@result["id"]%>" method="post">
+  <input type="hidden" name="_method" value="delete">
+  <input type="submit" value="削除">
+</form>
+
