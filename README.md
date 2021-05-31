@@ -4,7 +4,15 @@ SinatraでシンプルなWebアプリを作ろうの課題に取り組みまし�
 <br>
 
 ## 使い方
-次のコマンドでSinatraを立ち上げてください。
+1. 右上の`Fork`ボタンを押して、自分のアカウントのリモートリポジトリにコピーをします。
+2. 作業PCの任意の作業ディレクトリにて git clone してください。
+3. ブランチの指定をしてcloneする必要があるので`-b`オプションを指定します。
+
+```
+$ git clone -b ブランチ名 https://github.com/自分のアカウント名/sinatra-memo_app.git
+```
+
+4. clone後、次のコマンドでSinatraを立ち上げてください。
 
 ```
 $ bundle exec ruby main.rb 
