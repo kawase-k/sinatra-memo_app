@@ -1,10 +1,14 @@
-<div>
+<div class="memo__title__item">
   <%= escape(@result["title"]) %>
+</div>
+<div class="memo__body__item">
   <%= escape(@result["body"]) %>
 </div>
-<input type="submit" onclick="location.href='/memos/<%=@result["id"]%>/edit'" value="変更">
-<form action="/memos/<%=@result["id"]%>" method="post">
-  <input type="hidden" name="_method" value="delete">
-  <input type="submit" value="削除">
-</form>
+<div class="form-item">
+  <input type="submit" class="change__show-button" onclick="location.href='/memos/<%=@result["id"]%>/edit'" value="変更">
+  <form action="/memos/<%=@result["id"]%>" method="post">
+    <input type="hidden" name="_method" value="delete">
+    <input type="submit" class="delete__show-button" value="削除">
+  </form>
+</div>
 

@@ -52,7 +52,11 @@ end
 get '/memos/:id' do
   id = params[:id]
   @result = sort_and_convert_to_hash.find { |x| x['id'].include?(id) }
-  erb :show
+  if @result
+    erb :show
+  else
+    erb :not_found
+  end
 end
 
 # Edit memoページ
@@ -77,4 +81,9 @@ end
 delete '/memos/:id' do
   File.delete("json/#{params[:id]}.json")
   redirect('memos')
+end
+
+# 404ページの設定
+not_found do
+  erb :not_found
 end
