@@ -8,9 +8,9 @@ require 'securerandom'
 # 共通処理
 helpers do
   # jsonファイルを作成日順に並び替えて、ファイルの中身をhashに変換する処理
-  def sort_and_convert_to_hash
+  def bring_memos_from_json_file
     json_files = Dir.glob('json/*').sort_by { |file| File.birthtime(file) }
-    @hash_files = json_files.map { |file| JSON.parse(File.read(file)) }
+    json_files.map { |file| JSON.parse(File.read(file)) }
   end
 
   # XSS対策
@@ -19,7 +19,7 @@ helpers do
   end
 
   # hashからjson形式に変換する処理
-  def convert_to_json(hash)
+  def write_to_json_file(hash)
     File.open("json/#{hash['id']}.json", 'w') do |file|
       JSON.dump(hash, file)
     end
@@ -27,8 +27,13 @@ helpers do
 end
 
 # Topページ
+get '/' do
+  redirect('memos')
+end
+
 get '/memos' do
-  sort_and_convert_to_hash
+  json_files = Dir.glob('json/*').sort_by { |file| File.birthtime(file) }
+  @memos = json_files.map { |file| JSON.parse(File.read(file)) }
   erb :top
 end
 
@@ -44,14 +49,14 @@ post '/memos' do
     'title' => params[:title],
     'body' => params[:body]
   }
-  convert_to_json(new_memo)
+  write_to_json_file(new_memo)
   redirect('memos')
 end
 
 # Show memoページ
 get '/memos/:id' do
   id = params[:id]
-  @result = sort_and_convert_to_hash.find { |x| x['id'].include?(id) }
+  @result = bring_memos_from_json_file.find { |x| x['id'].include?(id) }
   if @result
     erb :show
   else
@@ -62,7 +67,7 @@ end
 # Edit memoページ
 get '/memos/:id/edit' do
   id = params[:id]
-  @result = sort_and_convert_to_hash.find { |x| x['id'].include?(id) }
+  @result = bring_memos_from_json_file.find { |x| x['id'].include?(id) }
   erb :edit
 end
 
@@ -73,7 +78,7 @@ patch '/memos/:id' do
     'title' => params[:title],
     'body' => params[:body]
   }
-  convert_to_json(edited_memo)
+  write_to_json_file(edited_memo)
   redirect('memos')
 end
 
