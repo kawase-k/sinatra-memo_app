@@ -1,6 +1,6 @@
 <ul>
   <% @memos.each do |file| %>
-    <li><a href="/memos/<%= escape(file["id"]) %>"><%= escape(file["title"]) %></a></li>
+    <li><a href="/memos/<%= file["id"] %>"><%= escape(file["title"]) %></a></li>
   <% end %>
 </ul>
 <input type="submit" onclick="location.href='/memos/new'" value="追加" class="top-botton">

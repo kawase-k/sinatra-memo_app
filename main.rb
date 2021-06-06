@@ -8,7 +8,7 @@ require 'securerandom'
 # 共通処理
 helpers do
   # jsonファイルを作成日順に並び替えて、ファイルの中身をhashに変換する処理
-  def bring_memos_from_json_file
+  def fetch_memos_from_json_file
     json_files = Dir.glob('json/*').sort_by { |file| File.birthtime(file) }
     json_files.map { |file| JSON.parse(File.read(file)) }
   end
@@ -32,8 +32,7 @@ get '/' do
 end
 
 get '/memos' do
-  json_files = Dir.glob('json/*').sort_by { |file| File.birthtime(file) }
-  @memos = json_files.map { |file| JSON.parse(File.read(file)) }
+  @memos = fetch_memos_from_json_file
   erb :top
 end
 
@@ -56,7 +55,7 @@ end
 # Show memoページ
 get '/memos/:id' do
   id = params[:id]
-  @result = bring_memos_from_json_file.find { |x| x['id'].include?(id) }
+  @result = fetch_memos_from_json_file.find { |x| x['id'].include?(id) }
   if @result
     erb :show
   else
@@ -67,7 +66,7 @@ end
 # Edit memoページ
 get '/memos/:id/edit' do
   id = params[:id]
-  @result = bring_memos_from_json_file.find { |x| x['id'].include?(id) }
+  @result = fetch_memos_from_json_file.find { |x| x['id'].include?(id) }
   erb :edit
 end
 
