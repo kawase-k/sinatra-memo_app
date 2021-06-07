@@ -1,0 +1,12 @@
+<form action="/memos/<%=@result["id"]%>" method="post">
+  <input type="hidden" name="_method" value="patch">
+  <div class="memo__title">
+    <input type="text" name="title" value="<%= escape(@result["title"]) %>" class="memo__title__item" required>
+  </div>
+  <div>
+    <textarea name="body" class="memo__body__item" required><%= escape(@result["body"]) %></textarea>
+  </div>
+  <div class="button-item">
+    <input type="submit" class="save__new-edit-button" value="変更">
+  </div>
+</form>
