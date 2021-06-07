@@ -33,6 +33,10 @@ helpers do
 end
 
 # Topページ
+get '/' do
+  redirect('memos')
+end
+
 get '/memos' do
   select_from_db
   erb :top
