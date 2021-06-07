@@ -13,22 +13,34 @@ helpers do
     Rack::Utils.escape_html(text)
   end
 
+  # DB接続
+  def connection
+    PG.connect(dbname: 'sinatra_memo_db')
+  end
+
   # DBからデータを取得する処理
   def select_from_db
-    connection = PG.connect(dbname: 'sinatra_memo_db')
     connection.exec('SELECT * FROM memos ORDER BY time asc')
+  end
+
+  # DBから条件に該当するデータを取得する処理
+  def select_conditionally_from_db
+    connection.exec("SELECT * FROM memos WHERE id= '#{params[:id]}'")
   end
 
   # DBにデータを追加する処理
   def add_to_db(hash)
-    connection = PG.connect(dbname: 'sinatra_memo_db')
     connection.exec('INSERT INTO memos (id, title, body, time) VALUES ($1, $2, $3, $4)', [hash['id'], hash['title'], hash['body'], hash['time']])
   end
 
   # DBのデータを更新する処理
   def update_db(hash)
-    connection = PG.connect(dbname: 'sinatra_memo_db')
     connection.exec('UPDATE memos SET title= $1, body= $2 WHERE id= $3;', [hash['title'], hash['body'], hash['id']])
+  end
+
+  # DBのデータを削除する処理
+  def delete_db
+    connection.exec("DELETE FROM memos WHERE id= '#{params[:id]}'")
   end
 end
 
@@ -61,8 +73,7 @@ end
 
 # Show memoページ
 get '/memos/:id' do
-  id = params[:id]
-  @result = select_from_db.find { |x| x['id'].include?(id) }
+  @result = select_conditionally_from_db[0]
   if @result
     erb :show
   else
@@ -72,8 +83,7 @@ end
 
 # Edit memoページ
 get '/memos/:id/edit' do
-  id = params[:id]
-  @result = select_from_db.find { |x| x['id'].include?(id) }
+  @result = select_conditionally_from_db[0]
   erb :edit
 end
 
@@ -90,8 +100,7 @@ end
 
 # メモを削除
 delete '/memos/:id' do
-  connection = PG.connect(dbname: 'sinatra_memo_db')
-  connection.exec("DELETE FROM memos WHERE id= '#{params[:id]}'")
+  delete_db
   redirect('memos')
 end
 
