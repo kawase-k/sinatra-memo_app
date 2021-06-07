@@ -16,7 +16,7 @@ helpers do
   # DBからデータを取得する処理
   def select_from_db
     connection = PG.connect(dbname: 'sinatra_memo_db')
-    @memos = connection.exec('SELECT * FROM memos ORDER BY time asc')
+    connection.exec('SELECT * FROM memos ORDER BY time asc')
   end
 
   # DBにデータを追加する処理
@@ -38,7 +38,7 @@ get '/' do
 end
 
 get '/memos' do
-  select_from_db
+  @memos = select_from_db
   erb :top
 end
 
