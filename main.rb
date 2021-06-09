@@ -25,7 +25,7 @@ helpers do
 
   # DBから条件に該当するデータを取得する処理
   def select_conditionally_from_db
-    connection.exec("SELECT * FROM memos WHERE id= '#{params[:id]}'")
+    connection.exec('SELECT * FROM memos WHERE id= $1', [params[:id]])
   end
 
   # DBにデータを追加する処理
@@ -35,7 +35,7 @@ helpers do
 
   # DBのデータを更新する処理
   def update_db(hash)
-    connection.exec('UPDATE memos SET title= $1, body= $2 WHERE id= $3;', [hash['title'], hash['body'], hash['id']])
+    connection.exec('UPDATE memos SET title= $1, body= $2 WHERE id= $3', [hash['title'], hash['body'], hash['id']])
   end
 
   # DBのデータを削除する処理
