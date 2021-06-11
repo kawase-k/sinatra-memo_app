@@ -4,25 +4,43 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'json'
 require 'securerandom'
+require 'pg'
 
 # 共通処理
 helpers do
-  # jsonファイルを作成日順に並び替えて、ファイルの中身をhashに変換する処理
-  def fetch_memos_from_json_file
-    json_files = Dir.glob('json/*').sort_by { |file| File.birthtime(file) }
-    json_files.map { |file| JSON.parse(File.read(file)) }
-  end
-
   # XSS対策
   def escape(text)
     Rack::Utils.escape_html(text)
   end
 
-  # hashからjson形式に変換する処理
-  def write_to_json_file(hash)
-    File.open("json/#{hash['id']}.json", 'w') do |file|
-      JSON.dump(hash, file)
-    end
+  # DB接続
+  def connection
+    PG.connect(dbname: 'sinatra_memo_db')
+  end
+
+  # DBからデータを取得する処理
+  def select_from_db
+    connection.exec('SELECT * FROM memos ORDER BY time asc')
+  end
+
+  # DBから条件に該当するデータを取得する処理
+  def select_conditionally_from_db
+    connection.exec('SELECT * FROM memos WHERE id= $1', [params[:id]])
+  end
+
+  # DBにデータを追加する処理
+  def add_to_db(hash)
+    connection.exec('INSERT INTO memos (id, title, body, time) VALUES ($1, $2, $3, $4)', [hash['id'], hash['title'], hash['body'], hash['time']])
+  end
+
+  # DBのデータを更新する処理
+  def update_db(hash)
+    connection.exec('UPDATE memos SET title= $1, body= $2 WHERE id= $3', [hash['title'], hash['body'], hash['id']])
+  end
+
+  # DBのデータを削除する処理
+  def delete_db
+    connection.exec("DELETE FROM memos WHERE id= '#{params[:id]}'")
   end
 end
 
@@ -32,7 +50,7 @@ get '/' do
 end
 
 get '/memos' do
-  @memos = fetch_memos_from_json_file
+  @memos = select_from_db
   erb :top
 end
 
@@ -46,16 +64,16 @@ post '/memos' do
   new_memo = {
     'id' => SecureRandom.uuid,
     'title' => params[:title],
-    'body' => params[:body]
+    'body' => params[:body],
+    'time' => Time.now
   }
-  write_to_json_file(new_memo)
+  add_to_db(new_memo)
   redirect('memos')
 end
 
 # Show memoページ
 get '/memos/:id' do
-  id = params[:id]
-  @result = fetch_memos_from_json_file.find { |x| x['id'].include?(id) }
+  @result = select_conditionally_from_db[0]
   if @result
     erb :show
   else
@@ -65,8 +83,7 @@ end
 
 # Edit memoページ
 get '/memos/:id/edit' do
-  id = params[:id]
-  @result = fetch_memos_from_json_file.find { |x| x['id'].include?(id) }
+  @result = select_conditionally_from_db[0]
   erb :edit
 end
 
@@ -77,13 +94,13 @@ patch '/memos/:id' do
     'title' => params[:title],
     'body' => params[:body]
   }
-  write_to_json_file(edited_memo)
+  update_db(edited_memo)
   redirect('memos')
 end
 
 # メモを削除
 delete '/memos/:id' do
-  File.delete("json/#{params[:id]}.json")
+  delete_db
   redirect('memos')
 end
 
